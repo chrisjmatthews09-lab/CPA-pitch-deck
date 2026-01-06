@@ -1,1087 +1,852 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Colorado Accounting Roll-Up Strategy</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .deck-container {
-            max-width: 1200px;
-            width: 100%;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        .slide {
-            display: none;
-            padding: 60px;
-            min-height: 600px;
-            animation: fadeIn 0.5s;
-        }
-
-        .slide.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .slide-header {
-            border-bottom: 3px solid #2a5298;
-            padding-bottom: 20px;
-            margin-bottom: 40px;
-        }
-
-        .slide-number {
-            color: #2a5298;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        h1 {
-            color: #1e3c72;
-            font-size: 42px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        h2 {
-            color: #2a5298;
-            font-size: 28px;
-            font-weight: 600;
-            margin: 30px 0 20px 0;
-        }
-
-        h3 {
-            color: #1e3c72;
-            font-size: 20px;
-            font-weight: 600;
-            margin: 20px 0 15px 0;
-        }
-
-        .subtitle {
-            color: #666;
-            font-size: 18px;
-            line-height: 1.6;
-        }
-
-        .highlight-box {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
-            border-left: 4px solid #2a5298;
-            padding: 25px;
-            margin: 25px 0;
-            border-radius: 8px;
-        }
-
-        .metric-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .metric-card {
-            background: white;
-            border: 2px solid #e0e7ef;
-            border-radius: 12px;
-            padding: 25px;
-            text-align: center;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .metric-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .metric-value {
-            font-size: 36px;
-            font-weight: 700;
-            color: #2a5298;
-            margin-bottom: 10px;
-        }
-
-        .metric-label {
-            color: #666;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .comparison-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 25px 0;
-            font-size: 14px;
-        }
-
-        .comparison-table th {
-            background: #2a5298;
-            color: white;
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-        }
-
-        .comparison-table td {
-            padding: 15px;
-            border-bottom: 1px solid #e0e7ef;
-        }
-
-        .comparison-table tr:hover {
-            background: #f5f7fa;
-        }
-
-        .rank-badge {
-            display: inline-block;
-            background: #2a5298;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 12px;
-        }
-
-        .rank-1 { background: #10b981; }
-        .rank-2 { background: #3b82f6; }
-        .rank-3 { background: #8b5cf6; }
-
-        .pro-con-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            margin: 25px 0;
-        }
-
-        .pro-box, .con-box {
-            padding: 25px;
-            border-radius: 12px;
-        }
-
-        .pro-box {
-            background: #d1fae5;
-            border-left: 4px solid #10b981;
-        }
-
-        .con-box {
-            background: #fee2e2;
-            border-left: 4px solid #ef4444;
-        }
-
-        .pro-box h3 { color: #065f46; }
-        .con-box h3 { color: #991b1b; }
-
-        ul {
-            margin: 15px 0;
-            padding-left: 25px;
-        }
-
-        li {
-            margin: 10px 0;
-            line-height: 1.6;
-            color: #374151;
-        }
-
-        .cta-box {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 35px;
-            border-radius: 12px;
-            margin-top: 40px;
-            text-align: center;
-        }
-
-        .cta-box h3 {
-            color: white;
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-
-        .navigation {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 25px 60px;
-            background: #f5f7fa;
-            border-top: 1px solid #e0e7ef;
-        }
-
-        .nav-button {
-            background: #2a5298;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s, transform 0.2s;
-        }
-
-        .nav-button:hover {
-            background: #1e3c72;
-            transform: scale(1.05);
-        }
-
-        .nav-button:disabled {
-            background: #cbd5e1;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .slide-counter {
-            color: #666;
-            font-weight: 500;
-        }
-
-        .bullet-point {
-            margin: 15px 0;
-            padding-left: 30px;
-            position: relative;
-        }
-
-        .bullet-point:before {
-            content: "→";
-            position: absolute;
-            left: 0;
-            color: #2a5298;
-            font-weight: bold;
-            font-size: 20px;
-        }
-
-        .deal-math-box {
-            background: #f8fafc;
-            border: 2px solid #2a5298;
-            border-radius: 12px;
-            padding: 25px;
-            margin: 25px 0;
-        }
-
-        .deal-math-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #e0e7ef;
-        }
-
-        .deal-math-row:last-child {
-            border-bottom: none;
-            font-weight: 700;
-            font-size: 18px;
-            color: #2a5298;
-            padding-top: 15px;
-            margin-top: 10px;
-            border-top: 2px solid #2a5298;
-        }
-
-        .warning-box {
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-        }
-
-        .timeline {
-            margin: 30px 0;
-        }
-
-        .timeline-item {
-            display: flex;
-            margin: 20px 0;
-            position: relative;
-        }
-
-        .timeline-marker {
-            width: 40px;
-            height: 40px;
-            background: #2a5298;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            margin-right: 20px;
-            flex-shrink: 0;
-        }
-
-        .timeline-content {
-            flex: 1;
-            padding: 15px;
-            background: #f5f7fa;
-            border-radius: 8px;
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .logo-text {
-            font-size: 28px;
-            font-weight: 700;
-            color: #1e3c72;
-            letter-spacing: 2px;
-        }
-
-        @media (max-width: 768px) {
-            .slide {
-                padding: 30px 20px;
-                min-height: auto;
-            }
-
-            h1 {
-                font-size: 28px;
-            }
-
-            .navigation {
-                padding: 20px;
-            }
-
-            .pro-con-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .metric-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="deck-container">
-        <!-- Slide 1: Title -->
-        <div class="slide active" data-slide="1">
-            <div class="logo">
-                <div class="logo-text">FRONT RANGE ACQUISITION GROUP</div>
-            </div>
-            <div style="text-align: center; padding: 60px 0;">
-                <h1 style="font-size: 52px; margin-bottom: 30px;">Colorado Accounting Services<br>Roll-Up Strategy</h1>
-                <p class="subtitle" style="font-size: 22px; max-width: 800px; margin: 0 auto;">Building a $10M-$20M Platform through Strategic Acquisition of Bookkeeping, Payroll & CPA Firms</p>
-                <div style="margin-top: 50px; color: #666; font-size: 16px;">
-                    <p><strong>Target Market:</strong> Denver Front Range</p>
-                    <p><strong>Target Size:</strong> $750K-$1.5M SDE per acquisition</p>
-                    <p><strong>Investment Horizon:</strong> 3-5 years</p>
-                    <p style="margin-top: 30px; font-size: 14px;">January 2026</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Slide 2: Investment Thesis -->
-        <div class="slide" data-slide="2">
-            <div class="slide-header">
-                <div class="slide-number">SLIDE 2</div>
-                <h1>Investment Thesis</h1>
-                <p class="subtitle">Why Now? Why Colorado Accounting Services?</p>
-            </div>
-
-            <div class="highlight-box">
-                <h3>The Opportunity</h3>
-                <p style="margin-top: 15px; line-height: 1.8;">A fragmented, recession-resistant sector with <strong>40,000+ firms nationally</strong>, aging ownership demographics driving consolidation, and PE capital creating liquidity events at scale. We can operate below the PE radar, using SBA financing for superior returns.</p>
-            </div>
-
-            <div class="metric-grid">
-                <div class="metric-card">
-                    <div class="metric-value">8-12x</div>
-                    <div class="metric-label">Cash-on-Cash Return Target</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">$10-20M</div>
-                    <div class="metric-label">Exit Valuation (3-5 years)</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">75-95%</div>
-                    <div class="metric-label">Client Retention Rate</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">70-85%</div>
-                    <div class="metric-label">Recurring Revenue Target</div>
-                </div>
-            </div>
-
-            <h2>Market Tailwinds</h2>
-            <div class="bullet-point">Baby Boomer retirements creating unprecedented deal flow (75% of CPAs retiring within next decade)</div>
-            <div class="bullet-point">PE-backed consolidation in accounting space accelerated ($6.3B+ invested in 2024)</div>
-            <div class="bullet-point">Technology enabling operational scalability (offshore labor, AI automation)</div>
-            <div class="bullet-point">Denver Front Range: Strong entrepreneurial ecosystem with fragmented provider landscape</div>
-        </div>
-
-        <!-- Slide 3: Market Analysis -->
-        <div class="slide" data-slide="3">
-            <div class="slide-header">
-                <div class="slide-number">SLIDE 3</div>
-                <h1>Market Dynamics</h1>
-                <p class="subtitle">Understanding the $145B U.S. Accounting Services Market</p>
-            </div>
-
-            <h2>Colorado Front Range Characteristics</h2>
-            <div class="pro-con-grid">
-                <div class="pro-box">
-                    <h3>✓ Favorable Conditions</h3>
-                    <ul>
-                        <li>Strong small business formation</li>
-                        <li>Tech startup ecosystem demand</li>
-                        <li>HNW migration from CA/East Coast</li>
-                        <li>Remote work enabling talent arbitrage</li>
-                        <li>Fragmented market structure</li>
-                    </ul>
-                </div>
-                <div class="con-box">
-                    <h3>⚠ Challenges to Navigate</h3>
-                    <ul>
-                        <li>Competitive talent market (wage inflation)</li>
-                        <li>CPA workforce declining 10% (2019-2024)</li>
-                        <li>Technology disruption (AI bookkeeping)</li>
-                        <li>Commoditization pressure</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="highlight-box">
-                <h3>Why This Market is Attractive</h3>
-                <div class="bullet-point">Regulatory complexity increasing (tax code changes, multi-state compliance)</div>
-                <div class="bullet-point">Small business outsourcing trend accelerating (cost of in-house accounting prohibitive)</div>
-                <div class="bullet-point">Technology enables remote delivery and offshore arbitrage (margin expansion)</div>
-                <div class="bullet-point">Recurring revenue model provides stability (unlike transaction-based businesses)</div>
-            </div>
-        </div>
-
-        <!-- Slide 4: Vertical Rankings -->
-        <div class="slide" data-slide="4">
-            <div class="slide-header">
-                <div class="slide-number">SLIDE 4</div>
-                <h1>Vertical Analysis & Rankings</h1>
-                <p class="subtitle">Which NAICS 5412 Categories to Target?</p>
-            </div>
-
-            <table class="comparison-table">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Vertical</th>
-                        <th>Recurring Revenue</th>
-                        <th>Stickiness</th>
-                        <th>SDE Multiple</th>
-                        <th>Key Advantage</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><span class="rank-badge rank-1">#1</span></td>
-                        <td><strong>Bookkeeping/CAS (541219)</strong></td>
-                        <td>70-85%</td>
-                        <td>High</td>
-                        <td>2.3x-3.0x</td>
-                        <td>Tech-enabled scalability, low barriers</td>
-                    </tr>
-                    <tr>
-                        <td><span class="rank-badge rank-2">#2</span></td>
-                        <td><strong>Payroll Services (541214)</strong></td>
-                        <td>90-95%</td>
-                        <td>Very High</td>
-                        <td>2.8x-3.5x</td>
-                        <td>Ultra-sticky, highest retention</td>
-                    </tr>
-                    <tr>
-                        <td><span class="rank-badge rank-3">#3</span></td>
-                        <td><strong>CPA Firms (541211)</strong></td>
-                        <td>40-60%</td>
-                        <td>High</td>
-                        <td>2.4x-3.2x</td>
-                        <td>Professional credibility, relationships</td>
-                    </tr>
-                    <tr>
-                        <td><span class="rank-badge">#4</span></td>
-                        <td><strong>CPA/Tax Hybrid</strong></td>
-                        <td>40-50%</td>
-                        <td>Medium</td>
-                        <td>2.0x-2.8x</td>
-                        <td>Only if bundled with advisory</td>
-                    </tr>
-                    <tr style="background: #fee2e2;">
-                        <td><span class="rank-badge" style="background: #ef4444;">AVOID</span></td>
-                        <td><strong>Standalone Tax Prep (541213)</strong></td>
-                        <td>10-20%</td>
-                        <td>Low-Med</td>
-                        <td>1.5x-2.5x</td>
-                        <td>Extreme seasonality, AI threat</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="highlight-box">
-                <h3>Our Recommendation: Bookkeeping First</h3>
-                <p style="margin-top: 10px;"><strong>Start with a Bookkeeping/CAS platform, then add Payroll tuck-ins.</strong> This combination provides the strongest foundation: recurring revenue, technology scalability, low licensing barriers, and clear cross-sell path.</p>
-            </div>
-        </div>
-
-        <!-- Slide 5: Roll-Up Strategy -->
-        <div class="slide" data-slide="5">
-            <div class="slide-header">
-                <div class="slide-number">SLIDE 5</div>
-                <h1>Roll-Up Strategy</h1>
-                <p class="subtitle">The Path to a $10M-$20M Platform</p>
-            </div>
-
-            <div class="timeline">
-                <div class="timeline-item">
-                    <div class="timeline-marker">Y1</div>
-                    <div class="timeline-content">
-                        <h3>Platform Acquisition: Bookkeeping/CAS Firm</h3>
-                        <p><strong>Target:</strong> $1M-$1.5M SDE | 70%+ recurring | Tech-enabled | Niche focus</p>
-                        <p><strong>Investment:</strong> $500K-$800K cash required (10% down + working capital)</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-marker">Y2</div>
-                    <div class="timeline-content">
-                        <h3>Tuck-In #1: Payroll Services</h3>
-                        <p><strong>Target:</strong> $500K-$750K SDE | 90%+ recurring | Modern platform (Gusto)</p>
-                        <p><strong>Expected Lift:</strong> 30-40% revenue growth via cross-sell</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-marker">Y3</div>
-                    <div class="timeline-content">
-                        <h3>Tuck-In #2: CPA/Tax Firm</h3>
-                        <p><strong>Target:</strong> $750K-$1M SDE | Tax focus | Staff depth</p>
-                        <p><strong>Expected Lift:</strong> 20-30% revenue growth via cross-sell</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-marker">Y4</div>
-                    <div class="timeline-content">
-                        <h3>Scale & Optimize</h3>
-                        <p>Implement offshore labor | AI automation | Process standardization</p>
-                        <p><strong>Margin Expansion:</strong> 10-15 percentage points</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-marker">Y5</div>
-                    <div class="timeline-content">
-                        <h3>Exit to PE Platform or Strategic Buyer</h3>
-                        <p><strong>Platform Size:</strong> $8M-$12M revenue | $2.5M-$4M SDE</p>
-                        <p><strong>Exit Valuation:</strong> 4.0x-5.0x EBITDA = <strong>$10M-$20M+</strong></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Slide 6: Target Profile -->
-        <div class="slide" data-slide="6">
-            <div class="slide-header">
-                <div class="slide-number">SLIDE 6</div>
-                <h1>Ideal Target Profile</h1>
-                <p class="subtitle">What We're Looking For in a Platform Acquisition</p>
-            </div>
-
-            <table class="comparison-table">
-                <thead>
-                    <tr>
-                        <th>Criteria</th>
-                        <th>Must-Have</th>
-                        <th>Nice-to-Have</th>
-                        <th>Red Flag</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Size</strong></td>
-                        <td>$750K-$1.5M SDE</td>
-                        <td>$1M-$1.5M (larger = better)</td>
-                        <td>&lt;$500K SDE (too small)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Revenue Mix</strong></td>
-                        <td>50%+ recurring</td>
-                        <td>70%+ recurring</td>
-                        <td>&gt;50% seasonal/project</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Client Concentration</strong></td>
-                        <td>No client &gt;20%</td>
-                        <td>No client &gt;10%</td>
-                        <td>Top 3 &gt;50%</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Team Depth</strong></td>
-                        <td>3+ FTE employees</td>
-                        <td>Manager/controller on staff</td>
-                        <td>Owner does 70%+ work</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Technology</strong></td>
-                        <td>Cloud-based (QBO/Xero)</td>
-                        <td>Practice mgmt system, AI tools</td>
-                        <td>Desktop software only</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Growth</strong></td>
-                        <td>Flat to +10%</td>
-                        <td>+10-20% growth</td>
-                        <td>Declining &gt;10% YoY</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Seller Transition</strong></td>
-                        <td>6-12 month availability</td>
-                        <td>Equity rollover option</td>
-                        <td>Immediate exit</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="highlight-box">
-                <h3>Niche Focus Opportunities</h3>
-                <p>Target firms specializing in high-value verticals:</p>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px;">
-                    <div style="padding: 15px; background: white; border-radius: 8px; text-align: center; font-weight: 600;">🏗️ Construction</div>
-                    <div style="padding: 15px; background: white; border-radius: 8px; text-align: center; font-weight: 600;">⚕️ Medical Practices</div>
-                    <div style="padding: 15px; background: white; border-radius: 8px; text-align: center; font-weight: 600;">🏢 Real Estate</div>
-                    <div style="padding: 15px; background: white; border-radius: 8px; text-align: center; font-weight: 600;">💻 SaaS Startups</div>
-                    <div style="padding: 15px; background: white; border-radius: 8px; text-align: center; font-weight: 600;">🛒 E-commerce</div>
-                    <div style="padding: 15px; background: white; border-radius: 8px; text-align: center; font-weight: 600;">🌿 Cannabis</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Slide 7: Deal Economics -->
-        <div class="slide" data-slide="7">
-            <div class="slide-header">
-                <div class="slide-number">SLIDE 7</div>
-                <h1>Deal Economics & Valuation</h1>
-                <p class="subtitle">Sample Acquisition: $1.1M SDE Platform</p>
-            </div>
-
-            <div class="deal-math-box">
-                <h3 style="margin-bottom: 20px;">Acquisition Structure</h3>
-                <div class="deal-math-row">
-                    <span>Target SDE</span>
-                    <span style="font-weight: 600;">$1,100,000</span>
-                </div>
-                <div class="deal-math-row">
-                    <span>Valuation Multiple</span>
-                    <span style="font-weight: 600;">2.6x SDE</span>
-                </div>
-                <div class="deal-math-row">
-                    <span>Enterprise Value</span>
-                    <span style="font-weight: 600; color: #2a5298;">$2,860,000</span>
-                </div>
-                <div class="deal-math-row">
-                    <span>Down Payment (10%)</span>
-                    <span>$286,000</span>
-                </div>
-                <div class="deal-math-row">
-                    <span>SBA Loan Amount (90%)</span>
-                    <span>$2,574,000</span>
-                </div>
-                <div class="deal-math-row">
-                    <span>Working Capital Injection</span>
-                    <span>$286,000</span>
-                </div>
-                <div class="deal-math-row">
-                    <span>Seller Transition Cost (Year 1)</span>
-                    <span>$120,000</span>
-                </div>
-                <div class="deal-math-row">
-                    <span><strong>TOTAL CASH REQUIRED</strong></span>
-                    <span><strong>$692,000</strong></span>
-                </div>
-            </div>
-
-            <h2>Debt Service & Returns</h2>
-            <div class="metric-grid">
-                <div class="metric-card">
-                    <div class="metric-value">$380K</div>
-                    <div class="metric-label">Annual Debt Service</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">2.90x</div>
-                    <div class="metric-label">DSCR (Strong)</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">$720K</div>
-                    <div class="metric-label">Cash Flow After Debt Service</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">87%</div>
-                    <div class="metric-label">Year 1 Cash-on-Cash ROI</div>
-                </div>
-            </div>
-
-            <div class="warning-box">
-                <strong>⚠️ SBA Underwriting Requirements:</strong> Lenders require 1.25x+ DSCR, seller transition plan, low client concentration (&lt;20% top client), and validated add-backs. Working capital typically 10-15% of purchase price.
-            </div>
-        </div>
-
-        <!-- Slide 8: Growth Levers -->
-        <div class="slide" data-slide="8">
-            <div class="slide-header">
-                <div class="slide-number">SLIDE 8</div>
-                <h1>Growth Playbook</h1>
-                <p class="subtitle">Organic & Inorganic Revenue Expansion</p>
-            </div>
-
-            <h2>Organic Growth Levers</h2>
-            <table class="comparison-table">
-                <thead>
-                    <tr>
-                        <th>Lever</th>
-                        <th>Strategy</th>
-                        <th>Expected Lift</th>
-                        <th>Timeline</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Move Upmarket</strong></td>
-                        <td>Bookkeeping → Controller → CFO Services</td>
-                        <td>30-50%</td>
-                        <td>12-24 months</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Niche Specialization</strong></td>
-                        <td>Vertical focus (construction, medical, SaaS)</td>
-                        <td>20-30%</td>
-                        <td>12-18 months</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Pricing Optimization</strong></td>
-                        <td>Hourly → Fixed retainers; value-based pricing</td>
-                        <td>15-25%</td>
-                        <td>6-12 months</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Offshore Labor</strong></td>
-                        <td>Philippines/India for transactional work</td>
-                        <td>20-25% margin expansion</td>
-                        <td>6-12 months</td>
-                    </tr>
-                    <tr>
-                        <td><strong>AI Automation</strong></td>
-                        <td>Botkeeper, Truewind for bookkeeping</td>
-                        <td>15-20% margin expansion</td>
-                        <td>3-9 months</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h2>Cross-Sell Matrix</h2>
-            <div class="highlight-box">
-                <p><strong>Bookkeeping Platform → Add Payroll:</strong> 30-40% revenue lift | Low difficulty</p>
-                <p><strong>Bookkeeping + Payroll → Add Tax:</strong> 20-30% revenue lift | Low difficulty</p>
-                <p><strong>Full Stack → Add CFO Advisory:</strong> 40-50% revenue lift | Medium difficulty</p>
-                <p style="margin-top: 15px; color: #059669; font-weight: 600;">Expected 3-Year Combined Lift: 80-120% revenue growth through cross-sell + organic strategies</p>
-            </div>
-        </div>
-
-        <!-- Slide 9: Risk Mitigation -->
-        <div class="slide" data-slide="9">
-            <div class="slide-header">
-                <div class="slide-number">SLIDE 9</div>
-                <h1>Risk Mitigation</h1>
-                <p class="subtitle">Key Risks & Mitigation Strategies</p>
-            </div>
-
-            <table class="comparison-table">
-                <thead>
-                    <tr>
-                        <th>Risk</th>
-                        <th>Impact</th>
-                        <th>Mitigation Strategy</th>
-                        <th>Priority</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Owner Dependency</strong></td>
-                        <td>Client churn post-acquisition</td>
-                        <td>12-24 month seller transition; staff retention bonuses; gradual client handoff</td>
-                        <td>🔴 High</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Client Concentration</strong></td>
-                        <td>Revenue loss if key client leaves</td>
-                        <td>Target firms with &lt;15% top client; diversify industries; long tenure clients</td>
-                        <td>🔴 High</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Technology Disruption</strong></td>
-                        <td>AI automating bookkeeping</td>
-                        <td>Move upmarket to controller/CFO; adopt AI internally; niche specialization</td>
-                        <td>🟡 Medium</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Talent Shortage</strong></td>
-                        <td>Wage inflation; recruitment difficulty</td>
-                        <td>Remote hiring; offshore labor; unlicensed staff pipeline to CPA</td>
-                        <td>🟡 Medium</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Integration Failure</strong></td>
-                        <td>Staff turnover; system disruption</td>
-                        <td>Phased integration; no immediate changes; retention incentives</td>
-                        <td>🔴 High</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Economic Downturn</strong></td>
-                        <td>Client churn; reduced spending</td>
-                        <td>Recurring revenue focus; essential services; diverse industries</td>
-                        <td>🟢 Low</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="highlight-box" style="margin-top: 30px;">
-                <h3>Deal-Killer Red Flags to Avoid</h3>
-                <ul>
-                    <li><strong>Owner-only operation:</strong> No staff = impossible transition</li>
-                    <li><strong>Top 3 clients &gt;60% revenue:</strong> Catastrophic concentration risk</li>
-                    <li><strong>Revenue declining &gt;15% YoY:</strong> Structural decline</li>
-                    <li><strong>Failed peer review (CPA firms):</strong> Quality control failure</li>
-                    <li><strong>Payroll tax liens:</strong> Compliance toxicity</li>
-                    <li><strong>Immediate seller exit:</strong> No transition = guaranteed churn</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Slide 10: Exit Strategy -->
-        <div class="slide" data-slide="10">
-            <div class="slide-header">
-                <div class="slide-number">SLIDE 10</div>
-                <h1>Exit Strategy</h1>
-                <p class="subtitle">Building to a $10M-$20M Exit</p>
-            </div>
-
-            <h2>Target Exit Profile (Year 5)</h2>
-            <div class="metric-grid">
-                <div class="metric-card">
-                    <div class="metric-value">$8-12M</div>
-                    <div class="metric-label">Annual Revenue</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">$2.5-4M</div>
-                    <div class="metric-label">SDE / EBITDA</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">4.0-5.0x</div>
-                    <div class="metric-label">Exit Multiple (EBITDA)</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">$10-20M</div>
-                    <div class="metric-label">Enterprise Value</div>
-                </div>
-            </div>
-
-            <h2>Buyer Universe</h2>
-            <div class="pro-con-grid">
-                <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 25px; border-radius: 12px;">
-                    <h3 style="color: #1e40af;">PE-Backed Platforms</h3>
-                    <p style="margin-top: 10px; line-height: 1.6;">Ascend (Alpine), Crete Alliance, top 30 PE-backed CPA firms. Looking for $5M+ revenue platforms for bolt-on acquisitions.</p>
-                    <p style="margin-top: 10px; font-weight: 600; color: #3b82f6;">Expected Multiple: 5.0-6.0x EBITDA</p>
-                </div>
-                <div style="background: #e0e7ff; border-left: 4px solid #6366f1; padding: 25px; border-radius: 12px;">
-                    <h3 style="color: #4338ca;">Strategic Buyers</h3>
-                    <p style="margin-top: 10px; line-height: 1.6;">Regional CPA firms ($10-100M), payroll platforms (ADP, Paychex), HR consolidators. Seeking geographic expansion and service line fill-in.</p>
-                    <p style="margin-top: 10px; font-weight: 600; color: #6366f1;">Expected Multiple: 4.0-5.0x EBITDA</p>
-                </div>
-            </div>
-
-            <div class="highlight-box" style="margin-top: 30px;">
-                <h3>Why This Platform Commands Premium Valuation</h3>
-                <div class="bullet-point"><strong>Recurring revenue 70-85%:</strong> Predictable cash flow; low churn</div>
-                <div class="bullet-point"><strong>Technology-enabled:</strong> Cloud-based; offshore labor; AI automation; scalable</div>
-                <div class="bullet-point"><strong>Diversified service lines:</strong> Bookkeeping + Payroll + Tax + Advisory</div>
-                <div class="bullet-point"><strong>Low client concentration:</strong> Top 10 clients &lt;40% revenue</div>
-                <div class="bullet-point"><strong>Niche specialization:</strong> Defensible expertise (construction, medical, SaaS)</div>
-            </div>
-
-            <div class="cta-box">
-                <h3>Projected Return: 8-12x Cash-on-Cash</h3>
-                <p style="margin-top: 15px; font-size: 18px;">Initial investment: $700K-$1M total (across 3-5 acquisitions)<br>Exit proceeds: $8M-$12M (after debt paydown)</p>
-            </div>
-        </div>
-
-        <!-- Slide 11: Next Steps -->
-        <div class="slide" data-slide="11">
-            <div class="slide-header">
-                <div class="slide-number">SLIDE 11</div>
-                <h1>Next 30 Days: Action Plan</h1>
-                <p class="subtitle">From Strategy to Execution</p>
-            </div>
-
-            <h2>Week 1-2: Foundation Setup</h2>
-            <div class="highlight-box">
-                <strong>Financial Infrastructure:</strong>
-                <ul>
-                    <li>Engage SBA lender (pre-qualification; understand DSCR requirements)</li>
-                    <li>Engage M&A attorney (Colorado-based; professional services experience)</li>
-                    <li>Engage CPA/financial advisor (QoE support; tax planning)</li>
-                    <li>Set acquisition budget ($500K-$800K equity for platform)</li>
-                </ul>
-            </div>
-
-            <h2>Week 2-3: Deal Sourcing</h2>
-            <div class="highlight-box">
-                <strong>Multi-Channel Approach:</strong>
-                <ul>
-                    <li><strong>Business Brokers:</strong> BizBuySell, Sunbelt, Transworld (register; share criteria)</li>
-                    <li><strong>Direct Outreach:</strong> LinkedIn (100 connections/week; CPA owners 55-70 years old)</li>
-                    <li><strong>COCPA:</strong> Join Colorado Society of CPAs (practice continuation programs)</li>
-                    <li><strong>Referral Partners:</strong> Wealth advisors, M&A attorneys, bankers (2-5% referral fee)</li>
-                    <li><strong>Direct Mail:</strong> 100-200 letters to CPA firm owners ("Succession planning")</li>
-                </ul>
-            </div>
-
-            <h2>Week 3-4: Initial Screening</h2>
-            <div class="highlight-box">
-                <strong>Triage Process:</strong>
-                <ul>
-                    <li>Review 10-15 CIMs from brokers</li>
-                    <li>Initial screening calls (use "Top 15 Questions" checklist)</li>
-                    <li>Eliminate non-fits (owner-only, concentration, declining revenue)</li>
-                    <li>Prioritize top 3-5 targets (recurring revenue, team depth, tech)</li>
-                    <li>Request financials (3-year P&L, client revenue detail, AR aging)</li>
-                </ul>
-            </div>
-
-            <div class="cta-box">
-                <h3>🎯 Goal: Execute LOI within 45-60 Days</h3>
-                <p style="margin-top: 10px;">Begin formal due diligence → Close within 90-120 days → Start integration</p>
-            </div>
-        </div>
-
-        <!-- Slide 12: Summary -->
-        <div class="slide" data-slide="12">
-            <div class="slide-header">
-                <div class="slide-number">SLIDE 12</div>
-                <h1>Executive Summary</h1>
-                <p class="subtitle">The Opportunity in Three Points</p>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin: 40px 0;">
-                <div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 35px; border-radius: 12px; text-align: center;">
-                    <div style="font-size: 48px; margin-bottom: 15px;">🎯</div>
-                    <h3 style="color: #1e40af; margin-bottom: 15px;">The Strategy</h3>
-                    <p style="line-height: 1.6;">Start with Bookkeeping/CAS platform ($1-1.5M SDE), add Payroll and CPA tuck-ins. Build $8-12M revenue platform through 3-5 acquisitions.</p>
-                </div>
-                <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); padding: 35px; border-radius: 12px; text-align: center;">
-                    <div style="font-size: 48px; margin-bottom: 15px;">💰</div>
-                    <h3 style="color: #065f46; margin-bottom: 15px;">The Returns</h3>
-                    <p style="line-height: 1.6;">8-12x cash-on-cash return over 3-5 years. Initial investment $700K-$1M. Exit at $10-20M enterprise value (4.0-5.0x EBITDA).</p>
-                </div>
-                <div style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); padding: 35px; border-radius: 12px; text-align: center;">
-                    <div style="font-size: 48px; margin-bottom: 15px;">⚡</div>
-                    <h3 style="color: #9f1239; margin-bottom: 15px;">The Edge</h3>
-                    <p style="line-height: 1.6;">Operate below PE radar. Use SBA financing for leverage. Technology-enabled scalability. Colorado market fragmentation creates opportunity.</p>
-                </div>
-            </div>
-
-            <div class="highlight-box" style="margin-top: 40px;">
-                <h3>Why This Works</h3>
-                <div class="metric-grid" style="margin-top: 20px;">
-                    <div>
-                        <strong style="color: #2a5298;">Fragmentation</strong>
-                        <p>40,000+ firms nationally; vast majority &lt;$5M revenue</p>
-                    </div>
-                    <div>
-                        <strong style="color: #2a5298;">Demographics</strong>
-                        <p>75% of CPAs retiring within next decade</p>
-                    </div>
-                    <div>
-                        <strong style="color: #2a5298;">Recession-Resistant</strong>
-                        <p>Essential services; high retention; recurring revenue</p>
-                    </div>
-                    <div>
-                        <strong style="color: #2a5298;">Technology</strong>
-                        <p>Offshore labor + AI automation = margin expansion</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="cta-box">
-                <h3>This is a Category-Defining Opportunity</h3>
-                <p style="margin-top: 15px; font-size: 18px;">Fragmented, capital-efficient, recession-resistant services sector with clear exit paths and multiple expansion potential in an underserved regional market.</p>
-                <p style="margin-top: 20px; font-size: 20px; font-weight: 700;">Let's Build It. 🚀</p>
-            </div>
-        </div>
-
-        <!-- Navigation -->
-        <div class="navigation">
-            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
-            <span class="slide-counter">
-                Slide <span id="currentSlide">1</span> of <span id="totalSlides">12</span>
-            </span>
-            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Next →</button>
-        </div>
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  TrendingUp, 
+  Users, 
+  Target, 
+  ShieldAlert, 
+  Rocket, 
+  PieChart, 
+  CheckCircle, 
+  Menu, 
+  X,
+  ChevronDown,
+  ArrowRight,
+  ArrowLeft,
+  DollarSign,
+  Briefcase,
+  AlertTriangle,
+  Calendar,
+  ChevronRight,
+  ChevronLeft,
+  Home
+} from 'lucide-react';
+
+// --- Shared UI Components ---
+
+const PageContainer = ({ title, subtitle, children }) => (
+  <div className="max-w-5xl mx-auto animate-fade-in pb-20 md:pb-0">
+    <div className="mb-8 border-b border-slate-200 pb-6">
+      <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-2">{title}</h2>
+      {subtitle && <p className="text-lg md:text-xl text-slate-500 font-light">{subtitle}</p>}
+    </div>
+    {children}
+  </div>
+);
+
+const Card = ({ children, className = "" }) => (
+  <div className={`bg-white rounded-xl shadow-sm border border-slate-200 p-6 ${className}`}>
+    {children}
+  </div>
+);
+
+const Badge = ({ children, color = "blue" }) => {
+  const colors = {
+    blue: "bg-blue-100 text-blue-800",
+    green: "bg-emerald-100 text-emerald-800",
+    red: "bg-rose-100 text-rose-800",
+    amber: "bg-amber-100 text-amber-800",
+    purple: "bg-purple-100 text-purple-800",
+    slate: "bg-slate-100 text-slate-800"
+  };
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide ${colors[color] || colors.blue}`}>
+      {children}
+    </span>
+  );
+};
+
+// --- Page Components ---
+
+const HeroPage = ({ onStart }) => (
+  <div className="min-h-full flex flex-col justify-center items-center text-center px-4 py-12 md:py-0">
+    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
+      <div className="inline-block p-4 bg-blue-50 rounded-2xl border border-blue-100 mb-4">
+        <TrendingUp className="w-12 h-12 text-blue-600" />
+      </div>
+      <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight text-slate-900">
+        Colorado Accounting <br />
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-500">
+          Roll-Up Strategy
+        </span>
+      </h1>
+      <p className="text-xl md:text-2xl text-slate-500 max-w-2xl mx-auto font-light leading-relaxed">
+        Building a $10M-$20M Platform through Strategic Acquisition of Bookkeeping, Payroll & CPA Firms
+      </p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left mt-12 w-full">
+        <Card className="bg-slate-50 border-slate-200">
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Target Market</p>
+          <p className="text-lg font-bold text-slate-900">Denver Front Range</p>
+        </Card>
+        <Card className="bg-slate-50 border-slate-200">
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Target Size</p>
+          <p className="text-lg font-bold text-slate-900">$750K - $1.5M SDE</p>
+        </Card>
+        <Card className="bg-slate-50 border-slate-200">
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Horizon</p>
+          <p className="text-lg font-bold text-slate-900">3-5 Years</p>
+        </Card>
+      </div>
+
+      <div className="pt-8">
+        <button 
+          onClick={onStart}
+          className="bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center mx-auto"
+        >
+          View The Strategy <ArrowRight className="ml-2 w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+const ThesisPage = () => (
+  <PageContainer title="Investment Thesis" subtitle="Why Now? Why Colorado Accounting Services?">
+    <div className="bg-blue-50 border-l-4 border-blue-600 p-8 rounded-r-xl mb-10">
+      <h3 className="text-xl font-bold text-blue-900 mb-4">The Opportunity</h3>
+      <p className="text-slate-700 leading-relaxed text-lg">
+        A fragmented, recession-resistant sector with <strong>40,000+ firms nationally</strong>, aging ownership demographics driving consolidation, and PE capital creating liquidity events at scale. We can operate below the PE radar, using SBA financing for superior returns.
+      </p>
     </div>
 
-    <script>
-        let currentSlide = 1;
-        const totalSlides = document.querySelectorAll('.slide').length;
-        
-        document.getElementById('totalSlides').textContent = totalSlides;
-        
-        function showSlide(n) {
-            const slides = document.querySelectorAll('.slide');
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+      {[
+        { val: "8-12x", label: "Cash-on-Cash Return Target", color: "text-emerald-600" },
+        { val: "$10-20M", label: "Exit Valuation (3-5 years)", color: "text-blue-600" },
+        { val: "75-95%", label: "Client Retention Rate", color: "text-indigo-600" },
+        { val: "70-85%", label: "Recurring Revenue Target", color: "text-purple-600" }
+      ].map((item, i) => (
+        <Card key={i} className="text-center hover:-translate-y-1 transition-transform duration-300">
+          <div className={`text-3xl md:text-4xl font-extrabold ${item.color} mb-2`}>{item.val}</div>
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-wide">{item.label}</div>
+        </Card>
+      ))}
+    </div>
+
+    <div className="space-y-6">
+      <h3 className="text-2xl font-bold text-slate-900">Market Tailwinds</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[
+          "Baby Boomer retirements creating unprecedented deal flow (75% of CPAs retiring within next decade)",
+          "PE-backed consolidation in accounting space accelerated ($6.3B+ invested in 2024)",
+          "Technology enabling operational scalability (offshore labor, AI automation)",
+          "Denver Front Range: Strong entrepreneurial ecosystem with fragmented provider landscape"
+        ].map((point, i) => (
+          <div key={i} className="flex items-start p-4 bg-slate-50 rounded-lg">
+            <CheckCircle className="w-6 h-6 text-emerald-500 mr-3 flex-shrink-0 mt-0.5" />
+            <p className="text-slate-700 font-medium">{point}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </PageContainer>
+);
+
+const MarketPage = () => (
+  <PageContainer title="Market Dynamics" subtitle="Understanding the $145B U.S. Accounting Services Market">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+      <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
+        <h3 className="flex items-center text-xl font-bold text-emerald-900 mb-6">
+          <TrendingUp className="w-6 h-6 mr-2" /> Favorable Conditions
+        </h3>
+        <ul className="space-y-4">
+          {[
+            "Strong small business formation",
+            "Tech startup ecosystem demand",
+            "HNW migration from CA/East Coast",
+            "Remote work enabling talent arbitrage",
+            "Fragmented market structure"
+          ].map((item, i) => (
+            <li key={i} className="flex items-center text-emerald-800">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></span>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="bg-rose-50/50 p-6 rounded-2xl border border-rose-100">
+        <h3 className="flex items-center text-xl font-bold text-rose-900 mb-6">
+          <ShieldAlert className="w-6 h-6 mr-2" /> Challenges to Navigate
+        </h3>
+        <ul className="space-y-4">
+          {[
+            "Competitive talent market (wage inflation)",
+            "CPA workforce declining 10% (2019-2024)",
+            "Technology disruption (AI bookkeeping)",
+            "Commoditization pressure"
+          ].map((item, i) => (
+            <li key={i} className="flex items-center text-rose-800">
+              <span className="w-2 h-2 bg-rose-500 rounded-full mr-3"></span>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <Card className="bg-slate-900 text-white border-slate-800">
+      <h3 className="text-xl font-bold mb-6">Why This Market is Attractive</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {[
+          "Regulatory complexity increasing (tax code changes, multi-state compliance)",
+          "Small business outsourcing trend accelerating (cost of in-house accounting prohibitive)",
+          "Technology enables remote delivery and offshore arbitrage (margin expansion)",
+          "Recurring revenue model provides stability (unlike transaction-based businesses)"
+        ].map((item, i) => (
+          <div key={i} className="flex items-start">
+            <ArrowRight className="w-5 h-5 text-blue-400 mr-3 flex-shrink-0 mt-1" />
+            <p className="text-slate-300 leading-relaxed">{item}</p>
+          </div>
+        ))}
+      </div>
+    </Card>
+  </PageContainer>
+);
+
+const RankingsPage = () => {
+  const data = [
+    { rank: 1, name: "Bookkeeping/CAS", code: "541219", rev: "70-85%", stick: "High", mult: "2.3x-3.0x", adv: "Tech-enabled scalability, low barriers", status: "target" },
+    { rank: 2, name: "Payroll Services", code: "541214", rev: "90-95%", stick: "Very High", mult: "2.8x-3.5x", adv: "Ultra-sticky, highest retention", status: "target" },
+    { rank: 3, name: "CPA Firms", code: "541211", rev: "40-60%", stick: "High", mult: "2.4x-3.2x", adv: "Professional credibility, relationships", status: "ok" },
+    { rank: 4, name: "CPA/Tax Hybrid", code: "Hybrid", rev: "40-50%", stick: "Medium", mult: "2.0x-2.8x", adv: "Only if bundled with advisory", status: "ok" },
+    { rank: "X", name: "Standalone Tax Prep", code: "541213", rev: "10-20%", stick: "Low-Med", mult: "1.5x-2.5x", adv: "Extreme seasonality, AI threat", status: "avoid" }
+  ];
+
+  return (
+    <PageContainer title="Vertical Rankings" subtitle="Which NAICS 5412 Categories to Target?">
+      <div className="overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="min-w-[800px]">
+          <div className="grid grid-cols-12 gap-4 bg-slate-100 p-4 rounded-t-xl font-bold text-slate-700 text-sm uppercase tracking-wider">
+            <div className="col-span-1">Rank</div>
+            <div className="col-span-3">Vertical</div>
+            <div className="col-span-2">Recurring Rev</div>
+            <div className="col-span-2">Stickiness</div>
+            <div className="col-span-2">SDE Multiple</div>
+            <div className="col-span-2">Key Advantage</div>
+          </div>
+          <div className="border border-t-0 border-slate-200 rounded-b-xl divide-y divide-slate-100">
+            {data.map((row, i) => (
+              <div key={i} className={`grid grid-cols-12 gap-4 p-4 items-center hover:bg-slate-50 transition-colors ${row.status === 'avoid' ? 'bg-rose-50 hover:bg-rose-100' : ''}`}>
+                <div className="col-span-1">
+                  <span className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-white text-sm
+                    ${row.rank === 1 ? 'bg-emerald-500' : 
+                      row.rank === 2 ? 'bg-blue-500' : 
+                      row.rank === 3 ? 'bg-purple-500' : 
+                      row.status === 'avoid' ? 'bg-rose-500' : 'bg-slate-400'}`}>
+                    {row.rank === 1 || row.rank === 2 || row.rank === 3 ? `#${row.rank}` : row.rank}
+                  </span>
+                </div>
+                <div className="col-span-3 font-bold text-slate-900">
+                  {row.name}
+                  <span className="block text-xs font-normal text-slate-500">{row.code}</span>
+                </div>
+                <div className="col-span-2 text-sm font-medium">{row.rev}</div>
+                <div className="col-span-2 text-sm font-medium">{row.stick}</div>
+                <div className="col-span-2 text-sm font-medium">{row.mult}</div>
+                <div className="col-span-2 text-xs text-slate-600 leading-tight">{row.adv}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-100 p-6 rounded-xl mt-8">
+        <h4 className="font-bold text-blue-900 mb-2">Our Recommendation: Bookkeeping First</h4>
+        <p className="text-slate-700">
+          <strong>Start with a Bookkeeping/CAS platform, then add Payroll tuck-ins.</strong> This combination provides the strongest foundation: recurring revenue, technology scalability, low licensing barriers, and clear cross-sell path.
+        </p>
+      </div>
+    </PageContainer>
+  );
+};
+
+const StrategyPage = () => (
+  <PageContainer title="Roll-Up Strategy" subtitle="The Path to a $10M-$20M Platform">
+    <div className="relative pl-8 md:pl-0">
+      <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-200 -translate-x-1/2"></div>
+      <div className="md:hidden absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200"></div>
+
+      {[
+        { year: "Y1", title: "Platform Acquisition: Bookkeeping/CAS Firm", target: "$1M-$1.5M SDE | 70%+ recurring | Tech-enabled", detail: "Investment: $500K-$800K cash required (10% down + working capital)" },
+        { year: "Y2", title: "Tuck-In #1: Payroll Services", target: "$500K-$750K SDE | 90%+ recurring | Modern platform (Gusto)", detail: "Expected Lift: 30-40% revenue growth via cross-sell" },
+        { year: "Y3", title: "Tuck-In #2: CPA/Tax Firm", target: "$750K-$1M SDE | Tax focus | Staff depth", detail: "Expected Lift: 20-30% revenue growth via cross-sell" },
+        { year: "Y4", title: "Scale & Optimize", target: "Implement offshore labor | AI automation | Process standardization", detail: "Margin Expansion: 10-15 percentage points" },
+        { year: "Y5", title: "Exit to PE Platform or Strategic Buyer", target: "Platform Size: $8M-$12M revenue | $2.5M-$4M SDE", detail: "Exit Valuation: 4.0x-5.0x EBITDA = $10M-$20M+" }
+      ].map((item, i) => (
+        <div key={i} className={`relative mb-12 md:w-1/2 ${i % 2 === 0 ? 'md:ml-auto md:pl-12' : 'md:mr-auto md:pr-12 md:text-right'}`}>
+          <div className={`absolute w-10 h-10 rounded-full border-4 border-white shadow-md flex items-center justify-center font-bold text-xs bg-blue-600 text-white z-10
+            ${i % 2 === 0 ? '-left-5 md:-left-5' : '-left-5 md:-right-5'}`}>
+            {item.year}
+          </div>
+          
+          <Card className="hover:shadow-md transition-shadow text-left">
+            <h3 className="font-bold text-lg text-slate-900 mb-2">{item.title}</h3>
+            <p className="text-sm font-semibold text-blue-600 mb-3">{item.target}</p>
+            <p className="text-sm text-slate-500">{item.detail}</p>
+          </Card>
+        </div>
+      ))}
+    </div>
+  </PageContainer>
+);
+
+const TargetProfilePage = () => (
+  <PageContainer title="Ideal Target Profile" subtitle="What We're Looking For in a Platform Acquisition">
+    <div className="overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+      <div className="min-w-[600px]">
+        <table className="w-full text-sm text-left">
+          <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-xs">
+            <tr>
+              <th className="px-6 py-3">Criteria</th>
+              <th className="px-6 py-3 text-emerald-700">Must-Have</th>
+              <th className="px-6 py-3 text-blue-700">Nice-to-Have</th>
+              <th className="px-6 py-3 text-rose-700">Red Flag</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 bg-white border border-slate-200">
+            {[
+              { c: "Size", m: "$750K-$1.5M SDE", n: "$1M-$1.5M (larger = better)", r: "<$500K SDE (too small)" },
+              { c: "Revenue Mix", m: "50%+ recurring", n: "70%+ recurring", r: ">50% seasonal/project" },
+              { c: "Client Conc.", m: "No client >20%", n: "No client >10%", r: "Top 3 >50%" },
+              { c: "Team Depth", m: "3+ FTE employees", n: "Manager/controller on staff", r: "Owner does 70%+ work" },
+              { c: "Technology", m: "Cloud-based (QBO/Xero)", n: "Practice mgmt system, AI", r: "Desktop software only" },
+              { c: "Growth", m: "Flat to +10%", n: "+10-20% growth", r: "Declining >10% YoY" },
+              { c: "Transition", m: "6-12 month availability", n: "Equity rollover option", r: "Immediate exit" },
+            ].map((row, i) => (
+              <tr key={i} className="hover:bg-slate-50">
+                <td className="px-6 py-4 font-bold text-slate-900">{row.c}</td>
+                <td className="px-6 py-4">{row.m}</td>
+                <td className="px-6 py-4 text-slate-600">{row.n}</td>
+                <td className="px-6 py-4 text-rose-600 bg-rose-50/30">{row.r}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div className="mt-10 bg-slate-50 p-8 rounded-xl border border-slate-200">
+      <h3 className="font-bold text-slate-900 mb-6 text-center">Niche Focus Opportunities</h3>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {[
+          "🏗️ Construction",
+          "⚕️ Medical Practices",
+          "🏢 Real Estate",
+          "💻 SaaS Startups",
+          "🛒 E-commerce",
+          "🌿 Cannabis"
+        ].map((niche, i) => (
+          <div key={i} className="bg-white p-4 rounded-lg shadow-sm text-center font-bold text-slate-700 border border-slate-100 hover:border-blue-300 transition-colors">
+            {niche}
+          </div>
+        ))}
+      </div>
+    </div>
+  </PageContainer>
+);
+
+const DealEconomicsPage = () => {
+  const [sde, setSde] = useState(1100000);
+  const [multiple, setMultiple] = useState(2.6);
+
+  const purchasePrice = sde * multiple;
+  const downPayment = purchasePrice * 0.10;
+  const workingCapital = 286000;
+  const sellerTransition = 120000;
+  const loanAmount = purchasePrice * 0.90;
+  
+  const interestRate = 0.115;
+  const months = 120;
+  const monthlyRate = interestRate / 12;
+  const monthlyPayment = (loanAmount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
+  const annualDebtService = monthlyPayment * 12;
+  
+  const cashFlowAfterDebt = sde - annualDebtService;
+  const totalCashRequired = downPayment + workingCapital + sellerTransition;
+  const cashOnCash = (cashFlowAfterDebt / totalCashRequired) * 100;
+
+  const fmt = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+  return (
+    <PageContainer title="Deal Economics & Valuation" subtitle="Sample Acquisition Model (Interactive)">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="space-y-6">
+          <Card className="bg-blue-50 border-blue-200">
+            <h3 className="font-bold text-blue-900 mb-6 flex items-center"><DollarSign className="w-5 h-5 mr-2"/> Acquisition Inputs</h3>
             
-            if (n > totalSlides) {
-                currentSlide = totalSlides;
-            }
-            if (n < 1) {
-                currentSlide = 1;
-            }
-            
-            slides.forEach(slide => {
-                slide.classList.remove('active');
-            });
-            
-            slides[currentSlide - 1].classList.add('active');
-            document.getElementById('currentSlide').textContent = currentSlide;
-            
-            // Update button states
-            document.getElementById('prevBtn').disabled = currentSlide === 1;
-            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
-            
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+            <div className="space-y-6">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <label className="font-bold text-slate-700">Target SDE</label>
+                  <span className="font-bold text-blue-600">{fmt(sde)}</span>
+                </div>
+                <input 
+                  type="range" min="500000" max="2000000" step="50000" value={sde}
+                  onChange={(e) => setSde(Number(e.target.value))}
+                  className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-2">
+                  <label className="font-bold text-slate-700">Valuation Multiple</label>
+                  <span className="font-bold text-blue-600">{multiple}x</span>
+                </div>
+                <input 
+                  type="range" min="2.0" max="4.0" step="0.1" value={multiple}
+                  onChange={(e) => setMultiple(Number(e.target.value))}
+                  className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <h3 className="font-bold text-slate-900 mb-4">Capital Stack</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between p-2 bg-slate-50 rounded">
+                <span>Enterprise Value</span>
+                <span className="font-bold text-slate-900">{fmt(purchasePrice)}</span>
+              </div>
+              <div className="flex justify-between p-2">
+                <span>Down Payment (10%)</span>
+                <span>{fmt(downPayment)}</span>
+              </div>
+              <div className="flex justify-between p-2">
+                <span>SBA Loan (90%)</span>
+                <span>{fmt(loanAmount)}</span>
+              </div>
+              <div className="flex justify-between p-2">
+                <span>Working Capital</span>
+                <span>{fmt(workingCapital)}</span>
+              </div>
+               <div className="flex justify-between p-2 border-t border-slate-100 pt-3">
+                <span className="font-bold text-slate-900">Total Cash Required</span>
+                <span className="font-bold text-blue-600">{fmt(totalCashRequired)}</span>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <Card className="bg-slate-900 text-white border-slate-800 text-center py-8">
+              <div className="text-3xl font-extrabold text-emerald-400 mb-2">{fmt(cashFlowAfterDebt)}</div>
+              <div className="text-xs uppercase tracking-wider text-slate-400">Cash Flow (Post-Debt)</div>
+            </Card>
+            <Card className="bg-emerald-600 text-white border-emerald-500 text-center py-8">
+              <div className="text-3xl font-extrabold mb-2">{cashOnCash.toFixed(1)}%</div>
+              <div className="text-xs uppercase tracking-wider text-emerald-100">Year 1 Cash-on-Cash</div>
+            </Card>
+          </div>
+
+          <Card className="bg-amber-50 border-amber-200">
+             <div className="flex items-start">
+               <AlertTriangle className="w-6 h-6 text-amber-600 mr-3 mt-0.5" />
+               <div className="text-sm text-amber-900">
+                 <strong>SBA Requirements:</strong> Lenders require 1.25x+ DSCR. Your current DSCR is <strong className={(sde/annualDebtService) < 1.25 ? "text-red-600" : "text-green-600"}>{(sde/annualDebtService).toFixed(2)}x</strong>. 
+                 Includes Seller Transition plan and low client concentration. Working capital typically 10-15%.
+               </div>
+             </div>
+          </Card>
+        </div>
+      </div>
+    </PageContainer>
+  );
+};
+
+const GrowthPage = () => (
+  <PageContainer title="Growth Playbook" subtitle="Organic & Inorganic Revenue Expansion">
+    <div className="mb-10">
+      <h3 className="text-xl font-bold text-slate-900 mb-6">Organic Growth Levers</h3>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm border-collapse">
+          <thead className="bg-slate-100 text-slate-600 uppercase font-bold text-xs">
+            <tr>
+              <th className="p-4 rounded-tl-lg">Lever</th>
+              <th className="p-4">Strategy</th>
+              <th className="p-4">Expected Lift</th>
+              <th className="p-4 rounded-tr-lg">Timeline</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-slate-100 border border-slate-200 border-t-0">
+            {[
+              { l: "Move Upmarket", s: "Bookkeeping → Controller → CFO Services", e: "30-50%", t: "12-24 months" },
+              { l: "Niche Spec.", s: "Vertical focus (construction, medical, SaaS)", e: "20-30%", t: "12-18 months" },
+              { l: "Pricing Opt.", s: "Hourly → Fixed retainers; value-based", e: "15-25%", t: "6-12 months" },
+              { l: "Offshore Labor", s: "Philippines/India for transactional work", e: "20-25% Margin", t: "6-12 months" },
+              { l: "AI Automation", s: "Botkeeper, Truewind for bookkeeping", e: "15-20% Margin", t: "3-9 months" },
+            ].map((row, i) => (
+              <tr key={i} className="hover:bg-slate-50">
+                <td className="p-4 font-bold text-slate-900">{row.l}</td>
+                <td className="p-4 text-slate-600">{row.s}</td>
+                <td className="p-4 font-bold text-emerald-600">{row.e}</td>
+                <td className="p-4 text-slate-500">{row.t}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-none">
+      <h3 className="text-xl font-bold mb-4">Cross-Sell Matrix</h3>
+      <div className="space-y-3">
+        <div className="flex justify-between items-center border-b border-white/20 pb-3">
+          <span>Bookkeeping Platform → Add Payroll</span>
+          <span className="font-bold text-blue-200">30-40% Revenue Lift</span>
+        </div>
+        <div className="flex justify-between items-center border-b border-white/20 pb-3">
+          <span>Bookkeeping + Payroll → Add Tax</span>
+          <span className="font-bold text-blue-200">20-30% Revenue Lift</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span>Full Stack → Add CFO Advisory</span>
+          <span className="font-bold text-blue-200">40-50% Revenue Lift</span>
+        </div>
+      </div>
+      <div className="mt-6 pt-4 border-t-2 border-white/20 text-center font-bold text-emerald-300">
+        Expected 3-Year Combined Lift: 80-120%
+      </div>
+    </Card>
+  </PageContainer>
+);
+
+const RiskPage = () => (
+  <PageContainer title="Risk Mitigation" subtitle="Key Risks & Mitigation Strategies">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+      {[
+        { t: "Owner Dependency", i: "High", m: "12-24 month seller transition; staff retention bonuses; gradual client handoff" },
+        { t: "Client Concentration", i: "High", m: "Target firms with <15% top client; diversify industries; long tenure clients" },
+        { t: "Integration Failure", i: "High", m: "Phased integration; no immediate changes; retention incentives" },
+        { t: "Technology Disruption", i: "Med", m: "Move upmarket to controller/CFO; adopt AI internally; niche specialization" },
+        { t: "Talent Shortage", i: "Med", m: "Remote hiring; offshore labor; unlicensed staff pipeline to CPA" },
+        { t: "Economic Downturn", i: "Low", m: "Recurring revenue focus; essential services; diverse industries" },
+      ].map((item, i) => (
+        <Card key={i} className="flex flex-col h-full hover:shadow-md transition-shadow">
+          <div className="flex justify-between items-center mb-3">
+            <h4 className="font-bold text-slate-900">{item.t}</h4>
+            <Badge color={item.i === 'High' ? 'red' : item.i === 'Med' ? 'amber' : 'green'}>{item.i}</Badge>
+          </div>
+          <p className="text-sm text-slate-600 leading-relaxed">{item.m}</p>
+        </Card>
+      ))}
+    </div>
+
+    <div className="bg-rose-50 border border-rose-200 p-6 rounded-xl">
+      <h3 className="font-bold text-rose-900 mb-4 flex items-center"><ShieldAlert className="w-5 h-5 mr-2"/> Deal-Killer Red Flags</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-rose-800">
+        <div className="flex items-center"><span className="mr-2">•</span> Owner-only operation (no staff)</div>
+        <div className="flex items-center"><span className="mr-2">•</span> Top 3 clients {'>'} 60% revenue</div>
+        <div className="flex items-center"><span className="mr-2">•</span> Revenue declining {'>'} 15% YoY</div>
+        <div className="flex items-center"><span className="mr-2">•</span> Failed peer review (CPA firms)</div>
+        <div className="flex items-center"><span className="mr-2">•</span> Payroll tax liens</div>
+        <div className="flex items-center"><span className="mr-2">•</span> Immediate seller exit</div>
+      </div>
+    </div>
+  </PageContainer>
+);
+
+const ExitPage = () => (
+  <PageContainer title="Exit Strategy" subtitle="Building to a $10M-$20M Exit">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+      {[
+        { l: "Annual Revenue", v: "$8-12M" },
+        { l: "SDE / EBITDA", v: "$2.5-4M" },
+        { l: "Exit Multiple", v: "4.0-5.0x" },
+        { l: "Enterprise Value", v: "$10-20M" }
+      ].map((item, i) => (
+        <div key={i} className="bg-slate-900 text-white p-6 rounded-xl text-center">
+          <div className="text-2xl md:text-3xl font-bold mb-1 text-emerald-400">{item.v}</div>
+          <div className="text-xs text-slate-400 uppercase tracking-wider">{item.l}</div>
+        </div>
+      ))}
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+      <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
+        <h3 className="text-lg font-bold text-blue-900 mb-2">PE-Backed Platforms</h3>
+        <p className="text-slate-600 mb-4 text-sm">Ascend (Alpine), Crete Alliance, top 30 PE-backed CPA firms. Looking for $5M+ revenue platforms.</p>
+        <div className="font-bold text-blue-700">Expected Multiple: 5.0-6.0x EBITDA</div>
+      </div>
+      <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
+        <h3 className="text-lg font-bold text-indigo-900 mb-2">Strategic Buyers</h3>
+        <p className="text-slate-600 mb-4 text-sm">Regional CPA firms ($10-100M), payroll platforms, HR consolidators. Seeking geo expansion.</p>
+        <div className="font-bold text-indigo-700">Expected Multiple: 4.0-5.0x EBITDA</div>
+      </div>
+    </div>
+
+    <Card>
+      <h3 className="font-bold text-slate-900 mb-4">Why This Platform Commands Premium Valuation</h3>
+      <ul className="space-y-3">
+        {[
+          "Recurring revenue 70-85%: Predictable cash flow; low churn",
+          "Technology-enabled: Cloud-based; offshore labor; AI automation",
+          "Diversified service lines: Bookkeeping + Payroll + Tax + Advisory",
+          "Low client concentration: Top 10 clients <40% revenue",
+          "Niche specialization: Defensible expertise"
+        ].map((item, i) => (
+          <li key={i} className="flex items-start text-slate-700 text-sm">
+            <CheckCircle className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" />
+            {item}
+          </li>
+        ))}
+      </ul>
+    </Card>
+
+    <div className="mt-8 bg-emerald-600 text-white p-8 rounded-xl text-center shadow-lg">
+      <h3 className="text-2xl font-bold mb-2">Projected Return: 8-12x Cash-on-Cash</h3>
+      <p className="opacity-90">Initial investment: $700K-$1M total • Exit proceeds: $8M-$12M</p>
+    </div>
+  </PageContainer>
+);
+
+const NextStepsPage = () => (
+  <PageContainer title="Next 30 Days: Action Plan" subtitle="From Strategy to Execution">
+    <div className="space-y-8">
+      <div className="relative border-l-2 border-slate-200 pl-8 ml-4">
+        <div className="mb-10 relative">
+          <div className="absolute -left-[41px] top-0 w-6 h-6 rounded-full bg-blue-600 border-4 border-white"></div>
+          <h3 className="font-bold text-lg text-slate-900 mb-4">Week 1-2: Foundation Setup</h3>
+          <ul className="list-disc ml-5 space-y-2 text-slate-600">
+            <li>Engage SBA lender (pre-qualification; understand DSCR requirements)</li>
+            <li>Engage M&A attorney (Colorado-based; professional services experience)</li>
+            <li>Engage CPA/financial advisor (QoE support; tax planning)</li>
+            <li>Set acquisition budget ($500K-$800K equity for platform)</li>
+          </ul>
+        </div>
+
+        <div className="mb-10 relative">
+          <div className="absolute -left-[41px] top-0 w-6 h-6 rounded-full bg-blue-600 border-4 border-white"></div>
+          <h3 className="font-bold text-lg text-slate-900 mb-4">Week 2-3: Deal Sourcing</h3>
+          <ul className="list-disc ml-5 space-y-2 text-slate-600">
+            <li><strong>Business Brokers:</strong> BizBuySell, Sunbelt, Transworld</li>
+            <li><strong>Direct Outreach:</strong> LinkedIn (100 connections/week; owners 55-70yo)</li>
+            <li><strong>COCPA:</strong> Join Colorado Society of CPAs</li>
+            <li><strong>Direct Mail:</strong> 100-200 letters to CPA firm owners</li>
+          </ul>
+        </div>
+
+        <div className="relative">
+          <div className="absolute -left-[41px] top-0 w-6 h-6 rounded-full bg-blue-600 border-4 border-white"></div>
+          <h3 className="font-bold text-lg text-slate-900 mb-4">Week 3-4: Initial Screening</h3>
+          <ul className="list-disc ml-5 space-y-2 text-slate-600">
+            <li>Review 10-15 CIMs from brokers</li>
+            <li>Initial screening calls (use "Top 15 Questions" checklist)</li>
+            <li>Eliminate non-fits (owner-only, concentration)</li>
+            <li>Request financials (3-year P&L, client revenue detail)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div className="mt-12 text-center">
+      <div className="inline-block bg-slate-900 text-white px-8 py-4 rounded-full font-bold shadow-xl">
+        🎯 Goal: Execute LOI within 45-60 Days
+      </div>
+    </div>
+  </PageContainer>
+);
+
+const SummaryPage = () => (
+  <PageContainer title="Executive Summary" subtitle="The Opportunity in Three Points">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
+        <div className="text-4xl mb-4">🎯</div>
+        <h3 className="font-bold text-blue-900 mb-3">The Strategy</h3>
+        <p className="text-sm text-slate-600 leading-relaxed">Start with Bookkeeping/CAS platform ($1-1.5M SDE), add Payroll and CPA tuck-ins. Build $8-12M revenue platform.</p>
+      </div>
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
+        <div className="text-4xl mb-4">💰</div>
+        <h3 className="font-bold text-emerald-900 mb-3">The Returns</h3>
+        <p className="text-sm text-slate-600 leading-relaxed">8-12x cash-on-cash return over 3-5 years. Exit at $10-20M enterprise value (4.0-5.0x EBITDA).</p>
+      </div>
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
+        <div className="text-4xl mb-4">⚡</div>
+        <h3 className="font-bold text-rose-900 mb-3">The Edge</h3>
+        <p className="text-sm text-slate-600 leading-relaxed">Operate below PE radar. Use SBA financing for leverage. Tech-enabled scalability.</p>
+      </div>
+    </div>
+
+    <div className="text-center space-y-8">
+      <h3 className="text-2xl font-bold text-slate-900">Let's Build It. 🚀</h3>
+      <p className="text-slate-500 max-w-2xl mx-auto">
+        Fragmented, capital-efficient, recession-resistant services sector with clear exit paths and multiple expansion potential in an underserved regional market.
+      </p>
+      
+      <button className="bg-slate-900 text-white px-8 py-3 rounded-full font-bold text-sm">
+        Contact Front Range Capital
+      </button>
+    </div>
+  </PageContainer>
+);
+
+// --- Main Layout & App ---
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const mainContentRef = useRef(null);
+
+  // Swipe detection refs
+  const touchStart = useRef(null);
+  const touchEnd = useRef(null);
+
+  const pages = [
+    { title: "Home", icon: Home, component: <HeroPage onStart={() => setActiveTab(1)} /> },
+    { title: "Thesis", icon: TrendingUp, component: <ThesisPage /> },
+    { title: "Market", icon: Target, component: <MarketPage /> },
+    { title: "Rankings", icon: PieChart, component: <RankingsPage /> },
+    { title: "Strategy", icon: Calendar, component: <StrategyPage /> },
+    { title: "Target Profile", icon: Users, component: <TargetProfilePage /> },
+    { title: "Deal Economics", icon: DollarSign, component: <DealEconomicsPage /> },
+    { title: "Growth", icon: Rocket, component: <GrowthPage /> },
+    { title: "Risks", icon: ShieldAlert, component: <RiskPage /> },
+    { title: "Exit", icon: Briefcase, component: <ExitPage /> },
+    { title: "Action Plan", icon: CheckCircle, component: <NextStepsPage /> },
+    { title: "Summary", icon: AlertTriangle, component: <SummaryPage /> },
+  ];
+
+  const handleNav = (index) => {
+    setActiveTab(index);
+    setSidebarOpen(false);
+    // Scroll to top of content area on change
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTop = 0;
+    }
+  };
+
+  const nextTab = () => {
+    if (activeTab < pages.length - 1) handleNav(activeTab + 1);
+  };
+
+  const prevTab = () => {
+    if (activeTab > 0) handleNav(activeTab - 1);
+  };
+
+  // Swipe handlers
+  const onTouchStart = (e) => {
+    touchEnd.current = null; 
+    touchStart.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchMove = (e) => {
+    touchEnd.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart.current || !touchEnd.current) return;
+    const distance = touchStart.current - touchEnd.current;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+    if (isLeftSwipe) nextTab();
+    if (isRightSwipe) prevTab();
+  };
+
+  return (
+    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
+      
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-64 flex-col bg-slate-900 text-white border-r border-slate-800">
+        <div className="p-6 border-b border-slate-800">
+          <span className="font-bold text-sm tracking-widest uppercase text-blue-400">Front Range</span>
+          <span className="block text-xs text-slate-400 mt-1">Acquisition Group</span>
+        </div>
+        <div className="flex-1 overflow-y-auto py-4 space-y-1">
+          {pages.map((page, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleNav(idx)}
+              className={`w-full flex items-center px-6 py-3 text-sm font-medium transition-colors border-l-4 
+                ${activeTab === idx 
+                  ? 'bg-slate-800 border-blue-500 text-white' 
+                  : 'border-transparent text-slate-400 hover:text-white hover:bg-slate-800'}`}
+            >
+              <page.icon className={`w-4 h-4 mr-3 ${activeTab === idx ? 'text-blue-400' : 'text-slate-500'}`} />
+              {page.title}
+            </button>
+          ))}
+        </div>
+        <div className="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+          &copy; 2026 Confidential
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col h-full relative">
         
-        function changeSlide(n) {
-            currentSlide += n;
-            showSlide(currentSlide);
-        }
-        
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') {
-                changeSlide(-1);
-            } else if (e.key === 'ArrowRight') {
-                changeSlide(1);
-            }
-        });
-        
-        // Initialize
-        showSlide(currentSlide);
-    </script>
-</body>
-</html>
+        {/* Mobile Header */}
+        <header className="md:hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 z-20 shadow-sm flex-shrink-0">
+          <div className="font-bold text-slate-900">
+            {pages[activeTab].title}
+          </div>
+          <button onClick={() => setSidebarOpen(true)} className="p-2 text-slate-600">
+            <Menu className="w-6 h-6" />
+          </button>
+        </header>
+
+        {/* Mobile Sidebar Overlay */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-50 flex">
+            <div className="w-64 bg-slate-900 text-white h-full shadow-2xl flex flex-col">
+              <div className="p-4 flex justify-between items-center border-b border-slate-800">
+                <span className="font-bold">Menu</span>
+                <button onClick={() => setSidebarOpen(false)}><X className="w-6 h-6" /></button>
+              </div>
+              <div className="flex-1 overflow-y-auto py-2">
+                {pages.map((page, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleNav(idx)}
+                    className={`w-full flex items-center px-6 py-4 text-sm font-medium border-l-4 
+                      ${activeTab === idx ? 'bg-slate-800 border-blue-500 text-white' : 'border-transparent text-slate-400'}`}
+                  >
+                    <page.icon className="w-4 h-4 mr-3" />
+                    {page.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 bg-black/50 backdrop-blur-sm" onClick={() => setSidebarOpen(false)}></div>
+          </div>
+        )}
+
+        {/* Scrollable Page Content */}
+        <main 
+          ref={mainContentRef}
+          className="flex-1 overflow-y-auto p-4 md:p-8 md:px-12 bg-white md:bg-slate-50"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
+          {pages[activeTab].component}
+        </main>
+
+        {/* Mobile Bottom Navigation */}
+        <div className="md:hidden h-16 bg-white border-t border-slate-200 flex items-center justify-between px-6 z-20 flex-shrink-0">
+          <button 
+            onClick={prevTab} 
+            disabled={activeTab === 0}
+            className="flex items-center text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed font-medium text-sm"
+          >
+            <ChevronLeft className="w-5 h-5 mr-1" /> Prev
+          </button>
+          <span className="text-xs text-slate-400 font-medium">
+            {activeTab + 1} / {pages.length}
+          </span>
+          <button 
+            onClick={nextTab}
+            disabled={activeTab === pages.length - 1}
+            className="flex items-center text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed font-medium text-sm"
+          >
+            Next <ChevronRight className="w-5 h-5 ml-1" />
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default App;
