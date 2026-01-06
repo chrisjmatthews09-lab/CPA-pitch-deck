@@ -24,7 +24,7 @@ import {
 // --- Shared UI Components ---
 
 const PageContainer = ({ title, subtitle, children }) => (
-  <div className="max-w-5xl mx-auto animate-fade-in pb-20 md:pb-0">
+  <div className="max-w-5xl mx-auto animate-fade-in pb-24 lg:pb-0">
     <div className="mb-8 border-b border-slate-200 pb-6">
       <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-2">{title}</h2>
       {subtitle && <p className="text-lg md:text-xl text-slate-500 font-light">{subtitle}</p>}
@@ -58,7 +58,7 @@ const Badge = ({ children, color = "blue" }) => {
 // --- Page Components ---
 
 const HeroPage = ({ onStart }) => (
-  <div className="min-h-full flex flex-col justify-center items-center text-center px-4 py-12 md:py-0">
+  <div className="min-h-full flex flex-col justify-center items-center text-center px-4 py-12 lg:py-0">
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
       <div className="inline-block p-4 bg-blue-50 rounded-2xl border border-blue-100 mb-4">
         <TrendingUp className="w-12 h-12 text-blue-600" />
@@ -745,10 +745,10 @@ const App = () => {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
+    <div className="flex h-[100dvh] bg-slate-50 overflow-hidden font-sans text-slate-900">
       
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-64 flex-col bg-slate-900 text-white border-r border-slate-800">
+      <aside className="hidden lg:flex w-64 flex-col bg-slate-900 text-white border-r border-slate-800">
         <div className="p-6 border-b border-slate-800">
           <span className="font-bold text-sm tracking-widest uppercase text-blue-400">Front Range</span>
           <span className="block text-xs text-slate-400 mt-1">Acquisition Group</span>
@@ -777,7 +777,7 @@ const App = () => {
       <div className="flex-1 flex flex-col h-full relative">
         
         {/* Mobile Header */}
-        <header className="md:hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 z-20 shadow-sm flex-shrink-0">
+        <header className="lg:hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 z-20 shadow-sm flex-shrink-0">
           <div className="font-bold text-slate-900">
             {pages[activeTab].title}
           </div>
@@ -789,7 +789,7 @@ const App = () => {
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
           <div className="fixed inset-0 z-50 flex">
-            <div className="w-64 bg-slate-900 text-white h-full shadow-2xl flex flex-col">
+            <div className="w-64 bg-slate-900 text-white h-full shadow-2xl flex flex-col z-50">
               <div className="p-4 flex justify-between items-center border-b border-slate-800">
                 <span className="font-bold">Menu</span>
                 <button onClick={() => setSidebarOpen(false)}><X className="w-6 h-6" /></button>
@@ -808,7 +808,7 @@ const App = () => {
                 ))}
               </div>
             </div>
-            <div className="flex-1 bg-black/50 backdrop-blur-sm" onClick={() => setSidebarOpen(false)}></div>
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" onClick={() => setSidebarOpen(false)}></div>
           </div>
         )}
 
@@ -824,7 +824,7 @@ const App = () => {
         </main>
 
         {/* Mobile Bottom Navigation */}
-        <div className="md:hidden h-16 bg-white border-t border-slate-200 flex items-center justify-between px-6 z-20 flex-shrink-0">
+        <div className="lg:hidden h-16 bg-white border-t border-slate-200 flex items-center justify-between px-6 z-20 flex-shrink-0">
           <button 
             onClick={prevTab} 
             disabled={activeTab === 0}
